@@ -1,0 +1,2 @@
+/home/danilo/Workspace/quarkus-mongodb-reactive/src/main/kotlin/com/quarkus/mongo/sample/model/UserEntity.kt
+/home/danilo/Workspace/quarkus-mongodb-reactive/src/main/kotlin/com/quarkus/mongo/sample/repository/UserRepository.kt

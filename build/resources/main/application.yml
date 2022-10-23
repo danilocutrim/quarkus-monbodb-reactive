@@ -1,0 +1,16 @@
+quarkus:
+  mongodb:
+    connection-string: ${ENV_MONGO_URI:mongodb://admin:admin@localhost:27017/test?authSource=admin}
+    database: ${ENV_MONGO_DATABASE_NAME:test}
+  http:
+    port: ${ENV_PORT:9079}
+    root-path: ${ENV_CTX_PATH:/sample}
+  profile: ${ENV:dev}
+  native:
+    container-build: ${ENV_CONTAINER_BUILD:true}
+  package:
+    type: ${ENV_PACKAGE_TYPE:native}
+  log:
+    console:
+      enable: true
+      json: false

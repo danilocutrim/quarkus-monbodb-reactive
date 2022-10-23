@@ -1,0 +1,119 @@
+buildscript {
+    ext {
+        kotlinVersion = "1.7.20"
+        detektVersion = "1.17.1"
+        spotlessVersion = "5.14.1"
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}"
+        classpath "org.jetbrains.kotlin:kotlin-noarg:${kotlinVersion}"
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detektVersion"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:$spotlessVersion"
+    }
+}
+
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
+    id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
+    id "io.quarkus"
+    id "java"
+    id "jacoco"
+    id "org.sonarqube" version "3.1.1"
+    id "com.github.jakemarsden.git-hooks" version "0.0.2"
+}
+
+gitHooks {
+    hooks = ["pre-push": "spotlessCheck detekt test"]
+    gradleCommand = "./gradlew"
+}
+
+apply from: "gradle/jacoco.gradle"
+apply from: "gradle/sonar.gradle"
+apply from: "gradle/detekt.gradle"
+apply from: "gradle/spotless.gradle"
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url "https://repo.gradle.org/gradle/libs-releases"
+    }
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation "io.quarkus:quarkus-rest-client-reactive-kotlin-serialization:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-resteasy-reactive:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-resteasy-reactive-kotlin:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-kotlin:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-resteasy-reactive-jackson:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-jackson:${quarkusPlatformVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "io.quarkus:quarkus-mongodb-panache-kotlin:${quarkusPlatformVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+    implementation "io.quarkus:quarkus-arc:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-mutiny:${quarkusPlatformVersion}"
+    implementation "io.smallrye.reactive:mutiny-kotlin:1.7.0"
+    implementation "org.jboss.slf4j:slf4j-jboss-logmanager:1.2.0.Final"
+    implementation "io.quarkus:quarkus-config-yaml:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-logging-json:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-smallrye-health:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-smallrye-opentracing:${quarkusPlatformVersion}"
+    implementation "io.quarkus:quarkus-smallrye-context-propagation:${quarkusPlatformVersion}"
+    testImplementation "io.quarkus:quarkus-junit5:${quarkusPlatformVersion}"
+    testImplementation "org.assertj:assertj-core:3.23.1"
+    testImplementation "io.mockk:mockk:1.13.2"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.10-native-mt"
+}
+
+group "com.quarkus.mongo"
+version "1.0.0-SNAPSHOT"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+allOpen {
+    annotation("javax.ws.rs.Path")
+    annotation("javax.enterprise.context.ApplicationScoped")
+    annotation("io.quarkus.test.junit.QuarkusTest")
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+    kotlinOptions.javaParameters = true
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+}
+
+task printVersion {
+    doLast {
+        println "Build version: $version"
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "${project.name}"
+    }
+}
+
+task printProjName {
+    doLast {
+        println "name: ${project.name}"
+    }
+}
